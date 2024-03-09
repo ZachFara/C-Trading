@@ -6,7 +6,7 @@ std::vector<std::string> TradingStrategy::movingAverageCrossover(int fastPeriod,
     std::vector<float> fastMA = getMovingAverage(fastPeriod);
     std::vector<float> slowMA = getMovingAverage(slowPeriod);
 
-    std::vector<std::string> signals(fastMA.size());
+    std::vector<std::string> signals(fastMA.size(), "Hold");
     for (int i = 1; i < fastMA.size(); i++) {
         if (fastMA[i] > slowMA[i] && fastMA[i-1] < slowMA[i-1]) {
             signals[i] = "Buy";

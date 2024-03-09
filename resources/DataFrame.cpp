@@ -3,6 +3,11 @@
 #include <fstream>
 #include <iostream>
 #include <cstdlib>
+#include <sstream>
+#include <algorithm>
+#include <string>
+#include <vector>
+
 
 DataFrame::DataFrame(std::string fileName){
     this->fileName = fileName;
@@ -15,54 +20,54 @@ DataFrame::DataFrame(std::string fileName){
         exit(1);
     }
 
-    // Read the column names
+    // Read the header row
     std::string line;
     std::getline(file, line);
-    std::string oneColumnName = "";
-    for (char c : line){
-        if (c == ','){
-            columnNames.push_back(oneColumnName);
-            oneColumnName = "";
+    std::stringstream ss(line);
+    std::string columnName;
+    int dateColumnIndex = -1;
+    int index = 0;
+    while (std::getline(ss, columnName, ',')) {
+        columnNames.push_back(columnName);
+        if (columnName == "Date") {
+            dateColumnIndex = index;
         }
-        else{
-            oneColumnName += c;
-        }
+        index++;
     }
-    // Add the last column name
-    if (!oneColumnName.empty()) {
-        columnNames.push_back(oneColumnName);
+
+    // Check if date column was found
+    if (dateColumnIndex == -1) {
+        std::cerr << "Error: Date column not found" << std::endl;
+        exit(1);
     }
 
     // Read the data
-    std::vector<float> oneRow;
     while (std::getline(file, line)){
-        std::string oneNumber = "";
-        for (char c : line){
-            if (c == ','){
-                oneRow.push_back(std::stof(oneNumber));
-                oneNumber = "";
+        std::stringstream ss(line);
+        std::string cell;
+        std::vector<float> oneRow;
+        index = 0;
+        while (std::getline(ss, cell, ',')) {
+            if (index == dateColumnIndex) {
+                dates.push_back(cell);
+            } else {
+                oneRow.push_back(std::stof(cell));
             }
-            else{
-                oneNumber += c;
-            }
+            index++;
         }
-        // Add the last number in the row
-        if (!oneNumber.empty()) {
-            oneRow.push_back(std::stof(oneNumber));
-        }
-        // Add the row to the data
         data.push_back(oneRow);
-        // Clear the oneRow vector for the next row
-        oneRow.clear();
     }
-
 }
 
 void DataFrame::show(int nRows){
     // Print the first nRows of the data
     for (int i = 0; i < nRows; i++){
+        std::cout << "Date: " << dates[i] << " ";
         for (int j = 0; j < columnNames.size(); j++){
-            std::cout << columnNames[j] << ": " << data[i][j] << " ";
+            if (columnNames[j] == "Date") {
+                continue;
+            }
+            std::cout << columnNames[j] << ": " << data[i][j - (dateColumnIndex < j ? 1 : 0)] << " ";
         }
         std::cout << std::endl;
     }

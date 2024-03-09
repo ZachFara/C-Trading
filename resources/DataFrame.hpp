@@ -12,9 +12,12 @@ using std::vector;
 
 class DataFrame{
 public:
+    // Attributes
     vector<string> columnNames;
     vector<vector<float>> data;
+    vector<string> dates;
 
+    // Methods
     DataFrame(string fileName);
     vector<float> getColumn(string columnName);
     vector<float> getRow(int rowIndex);
@@ -23,6 +26,7 @@ public:
     vector<float> sliceColumn(string columnName, int start, int end);
 private:
     string fileName;
+    int dateColumnIndex;
 };
 
 #endif
